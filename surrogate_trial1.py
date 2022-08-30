@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 
 from smt.utils import compute_rms_error
-from smt.surrogate_models import KRG, KPLS, RMTB
+from smt.surrogate_models import KRG, KPLS
 
 
 try:
