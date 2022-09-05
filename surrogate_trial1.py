@@ -7,7 +7,7 @@ import numpy as np
 from smt.utils import compute_rms_error
 from smt.surrogate_models import KRG, KPLS
 
-
+ 
 try:
     import matplotlib.pyplot as plt
     plot_status = True
@@ -17,7 +17,7 @@ except:
 
 #%%
 """preprocessing"""
-with open(r"220802_data.pkl","rb") as file: 
+with open(r"802_data.pkl","rb") as file: 
     list_input  = pickle.load(file)
     list_output = pickle.load(file)
     
@@ -103,14 +103,16 @@ def model_selection(model = str, theta = [1e-2, 1e-2, 1e-2, 1e-2]):
     ax1.plot(te_y, y, 'r.', label='$\hat{y}$')
 
     ax1.set_xlabel('$y_{true}$')
-    ax1.set_ylabel('deformation')
+    ax1.set_ylabel('response')
     
     ax1.legend(loc='upper left')
     ax1.set_title(model + 'model: validation of the prediction model')  
 
-    ax2.plot(te_x[:, 3], y, 'b.', label = 'prediction of x_test')
-    ax2.set_xlabel('force')
-    ax2.set_ylabel('deformation')
+    ax2.plot(te_x[:, 3], y, 'b-', label = 'prediction of x_test')
+    ax2.plot(te_x[:, 3], te_y, 'g--', label = 'true line')
+    ax2.set_xlabel('domain')
+    ax2.set_ylabel('response')
+    ax2.legend(loc = 'upper left')
     plt.show()
 
     # Value of theta
@@ -119,4 +121,4 @@ def model_selection(model = str, theta = [1e-2, 1e-2, 1e-2, 1e-2]):
 #%%
 model_selection('KRG')
 # model_selection('RMTB', theta = opt_theta)
-# %%
+#%%

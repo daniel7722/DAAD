@@ -9,7 +9,7 @@ https://www.johannes-strommer.com/formeln/auflagerreaktionen-durchbiegung-winkel
 Feste Einspannung - Einzellast - Loslager
 
 """
-
+#%%
 import numpy as np
 import random
 import pickle
@@ -31,7 +31,7 @@ def f(h,b,l,a,E,F,sigma_max):
     W = I/(h/2)
     M_a = F*a*(l-a)/l*(a/(2*l)-1)
     sigma_b = M_a/W
-    f = np.sin(F * I - sigma_b) * np.cos( a * l * E * b)
+    f = np.sin(F) * M_a
     if sigma_max < abs(sigma_b):
         return np.inf
     else:
@@ -43,11 +43,11 @@ f(10,5,1000,100,210000,1000,200)
 def create_random_para():
     h_bound = [20,40]
     b_bound = [5,30]
-    l_bound = [100, 1000]
-    E_bound = [200000, 210000]
+    l_bound = [1000]
+    E_bound = [210000]
     F_bound = [5000]
     a_bound = [100,200]
-    sigma_max_bound = [200, 300]
+    sigma_max_bound = [200]
     
     h = random.randint(min(h_bound),max(h_bound))
     b = random.randint(min(b_bound),max(b_bound))
@@ -94,6 +94,4 @@ with open(r"802_data.pkl","wb") as file:
 with open(r"802_data.pkl","rb") as file:
     list_input  = pickle.load(file)
     list_output = pickle.load(file)
-    
-    
     
