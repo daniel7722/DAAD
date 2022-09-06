@@ -31,7 +31,7 @@ def f(h,b,l,a,E,F,sigma_max):
     W = I/(h/2)
     M_a = F*a*(l-a)/l*(a/(2*l)-1)
     sigma_b = M_a/W
-    f = np.sin(F) * M_a
+    f = np.sin(F / a) * b * h
     if sigma_max < abs(sigma_b):
         return np.inf
     else:
@@ -46,7 +46,7 @@ def create_random_para():
     l_bound = [1000]
     E_bound = [210000]
     F_bound = [5000]
-    a_bound = [100,200]
+    a_bound = [50,200]
     sigma_max_bound = [200]
     
     h = random.randint(min(h_bound),max(h_bound))
@@ -56,7 +56,7 @@ def create_random_para():
     F = random.randint(min(F_bound),max(F_bound))
     a = random.randint(min(a_bound),max(a_bound))
     sigma_max = random.randint(min(sigma_max_bound),max(sigma_max_bound))
-    
+   
     return h,b,l,a,E,F,sigma_max
 
 def create_list_load_substeps(F):
