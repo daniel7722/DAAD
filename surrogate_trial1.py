@@ -65,10 +65,10 @@ te_index = np.random.choice(range(len(df)), testing_size)
 te_x_column = df.drop('deformation', axis = 1).columns
 te_y_column = list(df.columns).pop(-1)
 
-unique_np = df[['P1', 'P2']].to_numpy()
-p12 = unique_np[np.random.randint(unique_np.shape[0], size=1), :]
+unique_np = df[['P1', 'P2', 'P4']].to_numpy()
+p124 = unique_np[np.random.randint(unique_np.shape[0], size=1), :]
 
-df_alter = df[(df['P1']==p12[0][0]) & (df['P2']==p12[0][1])]
+df_alter = df[(df['P1']==p124[0][0]) & (df['P2']==p124[0][1]) & (df['P4']==p124[0][2])]
 te_x = df_alter[te_x_column].to_numpy()
 te_y = df_alter[te_y_column].to_numpy()
 
@@ -106,7 +106,7 @@ def model_selection(model = str, theta = [1e-2, 1e-2, 1e-2, 1e-2]):
     ax1.set_ylabel('response')
     
     ax1.legend(loc='upper left')
-    ax1.set_title(model + 'model: validation of the prediction model')  
+    ax1.set_title(model + ' model: validation of the prediction model 4')  
 
     ax2.plot(te_x[:, 3], y, 'b-', label = 'prediction of x_test')
     ax2.plot(te_x[:, 3], te_y, 'g--', label = 'true line')
