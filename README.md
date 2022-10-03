@@ -1,6 +1,6 @@
 # Surrogate Model for Soft Robot Movement Prediction (DAAD)
 
-##Project Description:
+## Project Description:
 
 Tis project is about using surrogate modelling techniques to capture and predict the movement of a simulated soft robot in 2D. Surrogate model is a method to solve a computationally expensive blackbox problem by building a simplified, middle-fidelity, but quick model from the real situations. This allows quicker run time to reach the answer and helps do further actions more accountable. 
 
