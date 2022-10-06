@@ -16,7 +16,8 @@ from random import randint
 #read RAW data
 # /Users/danielhuang/coding/DAAD_main/Data/220602_RAW_data_population_WITHOUT_COMMENT
 # C:\Users\Administrator\Documents\Neuer Ordner\DAAD\Data\220602_RAW_data_population_WITHOUT_COMMENT
-path_data=r'C:\Users\Administrator\Documents\Neuer Ordner\DAAD\Data\220602_RAW_data_population_WITHOUT_COMMENT'
+path_data=r'/Users/danielhuang/coding/DAAD_main/Data/220602_RAW_data_population_WITHOUT_COMMENT'
+
 list_chromosome, list_fitness, coords_RAW = read_RAW_data(path=path_data)
 
 #create the distributed points
@@ -106,7 +107,9 @@ class surrogate_modelling:
     def slicing_training(self, rand_num):
         dim = 8
         theta = [1e-2] * dim
-        for i in range(50):
+        x_value = {}
+        y_value = {}
+        for i in range(10):
             # separating it into input and two outputs
             self.x_test = self.df_process1_split[i][['0', '1', '2', '3', '4', '5', '6', '7']].to_numpy()
             self.y_test1 = self.df_process1_split[i]['9'].to_numpy()
@@ -123,34 +126,48 @@ class surrogate_modelling:
             tx.set_training_values(self.x_train,self.y_train1)
             tx.train()
             y1 = tx.predict_values(self.x_test)
-            print('kriging' + ' err: '+ str(compute_rms_error(tx,self.x_test,self.y_test1)))
+            # x_value[i] = y1
 
-            fig, (ax1, ax2) = plt.subplots(2)
+            ty = KPLS(theta0=theta,print_prediction = False, eval_n_comp = True)
+            ty.set_training_values(self.x_train, self.y_train2)
+            ty.train()
+            y2 = ty.predict_values(self.x_test)
+            # y_value[i] = y2
+        return y1.shape
+        # df_x = pd.DataFrame(x_value)
+        # df_y = pd.DataFrame(y_value)
 
-            # first plot is to detect how far off the prediction is
-            ax1.plot(self.y_test1, self.y_test1, '-', label='$y_{true}$')
-            ax1.plot(self.y_test1, y1, 'r.', label='$\hat{y}$')
-            ax1.set_xlabel('$y_{true}$')
-            ax1.set_ylabel('response')
-            ax1.legend(loc='upper left')
-            ax1.set_title('KRG' + ' model: validation of the prediction model')  
+        # plt.plot(df_x[0], df_y[0])
 
-            # second plot is to plot the real data versus prediction
-            ax2.plot([oo for oo in range(50)], y1, 'b-', label = 'prediction of x_test')
-            ax2.plot([pp for pp in range(50)], self.y_test1, 'g--', label = 'true line')
-            ax2.set_xlabel('domain')
-            ax2.set_ylabel('response')
-            ax2.legend(loc = 'upper left')
-            plt.savefig(f'Pics/position{i}.png')
-            print("theta values" + f'{tx.optimal_theta}')
+
+            # print('kriging' + ' err: '+ str(compute_rms_error(tx,self.x_test,self.y_test1)))
+
+            # fig, (ax1, ax2) = plt.subplots(2)
+
+            # # first plot is to detect how far off the prediction is
+            # ax1.plot(self.y_test1, self.y_test1, '-', label='$y_{true}$')
+            # ax1.plot(self.y_test1, y1, 'r.', label='$\hat{y}$')
+            # ax1.set_xlabel('$y_{true}$')
+            # ax1.set_ylabel('response')
+            # ax1.legend(loc='upper left')
+            # ax1.set_title('KRG' + ' model: validation of the prediction model')  
+
+            # # second plot is to plot the real data versus prediction
+            # ax2.plot([oo for oo in range(50)], y1, 'b-', label = 'prediction of x_test')
+            # ax2.plot([pp for pp in range(50)], self.y_test1, 'g--', label = 'true line')
+            # ax2.set_xlabel('domain')
+            # ax2.set_ylabel('response')
+            # ax2.legend(loc = 'upper left')
+            # plt.savefig(f'Pics/position{i}.png')
+            # print("theta values" + f'{tx.optimal_theta}')
             
 
 
 # In[35]:
 foo = surrogate_modelling(input_set = coords_prepro, output_set = list_chromosome)
-foo.portion_data(test_size = 100, train_size = 500)
+foo.portion_data(test_size = 100, train_size = 150)
 foo.preprocessing()
-foo.slicing_training(rand_num = 500)
+foo.slicing_training(rand_num = 20)
 
 
 # In[8]:
