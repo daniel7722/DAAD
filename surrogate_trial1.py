@@ -1,8 +1,10 @@
 #%%
 import pickle
 from this import d
+from matplotlib import testing
 import pandas as pd
 import numpy as np
+import random
 
 from smt.utils import compute_rms_error
 from smt.surrogate_models import KRG, KPLS
@@ -17,14 +19,15 @@ except:
 
 #%%
 """preprocessing"""
+
+# open the data we just created 
 with open(r"802_data.pkl","rb") as file: 
     list_input  = pickle.load(file)
     list_output = pickle.load(file)
     
+# sort out the data set as expected
 training_input_data     = []
 training_output_data    = []
-
-
 for initial_position, _output in zip(list_input,list_output):
     for force, deformation in zip(_output[0],_output[1]):
         _tmp = []
@@ -33,10 +36,10 @@ for initial_position, _output in zip(list_input,list_output):
         training_input_data.append(_tmp)
         training_output_data.append(deformation)
 
+# make the data set contain both input and output
 columns = [f'P{i+1}' for i in range(7)]
 columns.append('force')
 df = pd.DataFrame(training_input_data, columns = columns)
-
 df['deformation'] = training_output_data
 
 #%%
@@ -51,24 +54,30 @@ df = df.astype({"deformation": float})
 
 #%%
 """train, test split"""
+
+# making training set and testing set
 ndim = 4
-training_size = 100
-testing_size = 1000
+training_size = 1000
+testing_size = 100
+training_set = pd.DataFrame(df.iloc[:training_size, :])
+testing_set = pd.DataFrame(df.iloc[training_size:, :])
 
-tr_index = np.random.choice(range(len(df)), training_size)
-tr_x_column = df.drop('deformation', axis = 1).columns
-tr_y_column = list(df.columns).pop(-1)
-tr_x = df[tr_x_column].to_numpy()
-tr_y = df[tr_y_column].to_numpy()
+# splitting input and ourput for training set 
+tr_index = np.random.choice(range(len(training_set)), training_size)
+tr_x_column = training_set.drop('deformation', axis = 1).columns
+tr_y_column = list(training_set.columns).pop(-1)
+tr_x = training_set[tr_x_column].to_numpy()
+tr_y = training_set[tr_y_column].to_numpy()
 
-te_index = np.random.choice(range(len(df)), testing_size)
-te_x_column = df.drop('deformation', axis = 1).columns
-te_y_column = list(df.columns).pop(-1)
+# splitting input and output for testing set
+te_index = np.random.choice(range(len(testing_set)), testing_size)
+te_x_column = testing_set.drop('deformation', axis = 1).columns
+te_y_column = list(testing_set.columns).pop(-1)
 
-unique_np = df[['P1', 'P2', 'P4']].to_numpy()
+# set the testing set as one configuration
+unique_np = testing_set[['P1', 'P2', 'P4']].to_numpy()
 p124 = unique_np[np.random.randint(unique_np.shape[0], size=1), :]
-
-df_alter = df[(df['P1']==p124[0][0]) & (df['P2']==p124[0][1]) & (df['P4']==p124[0][2])]
+df_alter = testing_set[(testing_set['P1']==p124[0][0]) & (testing_set['P2']==p124[0][1]) & (testing_set['P4']==p124[0][2])]
 te_x = df_alter[te_x_column].to_numpy()
 te_y = df_alter[te_y_column].to_numpy()
 
@@ -120,5 +129,4 @@ def model_selection(model = str, theta = [1e-2, 1e-2, 1e-2, 1e-2]):
 
 #%%
 model_selection('KRG')
-# model_selection('RMTB', theta = opt_theta)
-#%%
+
