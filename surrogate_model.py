@@ -16,7 +16,7 @@ from random import randint
 #read RAW data
 # /Users/danielhuang/coding/DAAD_main/Data/220602_RAW_data_population_WITHOUT_COMMENT
 # C:\Users\Administrator\Documents\Neuer Ordner\DAAD\Data\220602_RAW_data_population_WITHOUT_COMMENT
-path_data=r'C:\Users\Administrator\Documents\Neuer Ordner\DAAD\Data\220602_RAW_data_population_WITHOUT_COMMENT'
+path_data=r'/Users/danielhuang/coding/DAAD_main/Data/220602_RAW_data_population_WITHOUT_COMMENT'
 
 list_chromosome, list_fitness, coords_RAW = read_RAW_data(path=path_data)
 
@@ -108,7 +108,9 @@ class surrogate_modelling:
         dim = 8
         theta = [1e-2] * dim
         x_value = []
+        x_validate = []
         y_value = []
+        y_validate = []
         for i in range(10):
             # separating it into input and two outputs
             self.x_test = self.df_process1_split[i][['0', '1', '2', '3', '4', '5', '6', '7']].to_numpy()
@@ -127,6 +129,7 @@ class surrogate_modelling:
             tx.train()
             y1 = tx.predict_values(self.x_test)
             x_value.append(y1.ravel())
+            x_validate.append(self.y_test1.ravel())
             
 
             ty = KPLS(theta0=theta,print_prediction = False, eval_n_comp = True)
@@ -134,11 +137,16 @@ class surrogate_modelling:
             ty.train()
             y2 = ty.predict_values(self.x_test)
             y_value.append(y2.ravel())
+            y_validate.append(self.y_test2.ravel())
         
         df_x = pd.DataFrame(x_value)
         df_y = pd.DataFrame(y_value)
+        df_x_val = pd.DataFrame(x_validate)
+        df_y_val = pd.DataFrame(y_validate)
 
-        plt.plot(df_x.iloc[0, :], df_y.iloc[0, :])
+        plt.plot(df_x.iloc[0, :], df_y.iloc[0, :], 'b.')
+        plt.plot(df_x_val.iloc[0, :], df_y.iloc[0, :], 'g.')
+
         
 
 
