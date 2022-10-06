@@ -15,11 +15,12 @@ from random import randint
 
 #read RAW data
 # /Users/danielhuang/coding/DAAD_main/Data/220602_RAW_data_population_WITHOUT_COMMENT
-path_data=r'C:\Users\Administrator\Documents\Neuer Ordner\DAAD\Data\220602_RAW_data_population_WITHOUT_COMMENT'
+# C:\Users\Administrator\Documents\Neuer Ordner\DAAD\Data\220602_RAW_data_population_WITHOUT_COMMENT
+path_data=r'/Users/danielhuang/coding/DAAD_main/Data/220602_RAW_data_population_WITHOUT_COMMENT'
 list_chromosome, list_fitness, coords_RAW = read_RAW_data(path=path_data)
 
 #create the distributed points
-number_of_points = 50 #too little and you loose information about the fea path
+number_of_points = 50 #too little and you lose information about the fea path
 coords_prepro = get_distributed_points_of_desired_amount(
     coords_RAW=coords_RAW,
     number_of_points=number_of_points
@@ -44,26 +45,142 @@ list_chromosome, list_fitness, coords_RAW, coords_prepro = delete_results_of_fal
 #reduced the chromosome to the first 8 entries (the coords of the mechnisms edge nodes)
 list_chromosome = simplify_chromosome(list_chromosome=list_chromosome)
 
-#visualize the RAW and preprocessed coordinates
-# path_pics=r".\Pics"
-# index = 2
-# compare_RAW_preprocessed_coords_in_plot(path                 = path_pics,
-#                                         coords_RAW_single    = coords_RAW[index],
-#                                         coords_prepro_single = coords_prepro[index],
-#                                         title                = str(index)
-#                                         )
-
-#np.save("input_X.npy",list_chromosome)
-#np.save("output_Y.npy",coords_prepro)
 
 # In[3]:
-"""benchmarking"""
-# coords_prepro_shuffled = coords_prepro.copy()
-# random.shuffle(coords_prepro_shuffled)
 
-# mse_benchmark = mean_squared_error(coords_prepro, coords_prepro_shuffled)
-# #me = mse_benchmark**0.5
-# print(mse_benchmark)
+class surrogate_modelling:
+
+    def __init__(self, input_set = coords_prepro, output_set = list_chromosome):
+        self.input_set = input_set
+        self.output_set = output_set
+
+    def portion_data(self, input_size = 100, output_size = 150):
+        # Taking a portion of data becasue too many data entries crash jupyter kernel
+        self.testing_in = np.array(self.input_set[:input_size])
+        self.testing_out = np.array(self.output_set[:input_size])
+        self.training_in = np.array(self.input_set[input_size:output_size])
+        self.training_out = np.array(self.output_set[input_size:output_size])
+
+    def preprocessing(self):
+        # separating training set and testing set
+        transpose_testing = np.array(self.testing_in).T
+        data_x_test = transpose_testing[:50]
+        data_y_test = transpose_testing[50:]
+        transpose_training = np.array(self.training_in).T
+        data_x_train = transpose_training[:50]
+        data_y_train = transpose_training[50:]
+
+        # cleaning and recreating data that is usable as I wish
+        # testing data
+        self.testing_processed     = []
+        for index, i in enumerate(self.testing_out):
+            for indexs, (j, z) in enumerate(zip(data_x_test, data_y_test)):
+                _temp = []
+                _temp.extend(i)
+                _temp.extend([indexs])
+                _temp.extend([j[index]])
+                _temp.extend([z[index]])
+                self.testing_processed.append(_temp)
+
+        # training data
+        self.training_processed    = []
+        for index, i in enumerate(self.training_out):
+            for indexs, (j, z) in enumerate(zip(data_x_train, data_y_train)):
+                _temp = []
+                _temp.extend(i)
+                _temp.extend([indexs])
+                _temp.extend([j[index]])
+                _temp.extend([z[index]])
+                self.training_processed.append(_temp)
+        
+        columns =['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'] 
+        df_process1 = pd.DataFrame(self.testing_processed, columns= columns)
+        df_process2 = pd.DataFrame(self.training_processed, columns= columns)
+
+        df_process1.sort_values('8', inplace = True)
+        df_process2.sort_values('8', inplace = True)
+
+        self.df_process2_split = np.array_split(df_process2, len(df_process2)/50)
+        self.df_process1_split = np.array_split(df_process1, len(df_process1)/50)
+
+    def training(self):
+        dim = 8
+        theta = [1e-2] * dim
+        for i in range(50):
+            # separating it into input and two outputs
+            self.x_test = self.df_process1_split[i][['0', '1', '2', '3', '4', '5', '6', '7']].to_numpy()
+            self.y_test1 = self.df_process1_split[i]['9'].to_numpy()
+            self.y_test2 = self.df_process1_split[i]['10'].to_numpy()
+
+            indicesss = np.random.choice(range(len(self.df_process2_split)), 20)
+
+            # separating it into input and two outputs
+            self.x_train = self.df_process2_split[i].iloc[indicesss, :8].to_numpy()
+            self.y_train1 = self.df_process2_split[i].iloc[indicesss, 9].to_numpy()
+            self.y_train2 = self.df_process2_split[i].iloc[indicesss, 10].to_numpy()
+
+            tx = KRG(theta0=theta,print_prediction = False)
+            tx.set_training_values(self.x_train,self.y_train1)
+            tx.train()
+            y1 = tx.predict_values(self.x_test)
+            print('kriging' + ' err: '+ str(compute_rms_error(tx,self.x_test,self.y_test1)))
+
+            fig, (ax1, ax2) = plt.subplots(2)
+
+            # first plot is to detect how far off the prediction is
+            ax1.plot(self.y_test1, self.y_test1, '-', label='$y_{true}$')
+            ax1.plot(self.y_test1, y1, 'r.', label='$\hat{y}$')
+            ax1.set_xlabel('$y_{true}$')
+            ax1.set_ylabel('response')
+            ax1.legend(loc='upper left')
+            ax1.set_title('KRG' + ' model: validation of the prediction model')  
+
+            # second plot is to plot the real data versus prediction
+            ax2.plot([oo for oo in range(50)], y1, 'b-', label = 'prediction of x_test')
+            ax2.plot([pp for pp in range(50)], self.y_test1, 'g--', label = 'true line')
+            ax2.set_xlabel('domain')
+            ax2.set_ylabel('response')
+            ax2.legend(loc = 'upper left')
+            plt.savefig(f'Pics/position{i}.png')
+            print("theta values" + f'{tx.optimal_theta}')
+            
+
+
+# In[35]:
+foo = surrogate_modelling(input_set = coords_prepro, output_set = list_chromosome)
+foo.portion_data()
+foo.preprocessing()
+foo.training()
+
+
+# In[8]:
+"""train model 2"""
+ty = KPLS(theta0=theta,print_prediction = False, eval_n_comp = True)
+ty.set_training_values(x_train,y_train2)
+ty.train()
+
+# In[9]:
+"""Predict y value and create plots"""
+y2 = ty.predict_values(x_test)
+print('kriging' + ' err: '+ str(compute_rms_error(ty,x_test,y_test2)))
+
+fig, (ax1, ax2) = plt.subplots(2)
+# first plot is to detect how far off the prediction is
+ax1.plot(y_test2, y_test2, '-', label='$y_{true}$')
+ax1.plot(y_test2, y2, 'r.', label='$\hat{y}$')
+ax1.set_xlabel('$y_{true}$')
+ax1.set_ylabel('response')
+ax1.legend(loc='upper left')
+ax1.set_title('KRG' + ' model: validation of the prediction model')  
+
+# second plot is to plot the real data versus prediction
+ax2.plot(x_test[:, 8], y2, 'b-', label = 'prediction of y_test')
+ax2.plot(x_test[:, 8], y_test2, 'g--', label = 'true line')
+ax2.set_xlabel('domain')
+ax2.set_ylabel('response')
+ax2.legend(loc = 'upper left')
+plt.show()
+print("theta values" + f'{ty.optimal_theta}')
 
 # In[4]:
 """Data Splitting"""
