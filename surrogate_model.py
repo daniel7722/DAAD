@@ -71,8 +71,8 @@ list_chromosome = simplify_chromosome(list_chromosome=list_chromosome)
 # Taking a portion of data becasue too many data entries crash jupyter kernel
 testing_data1 = np.array(coords_prepro[:100])
 testing_data2 = np.array(list_chromosome[:100])
-training_data1 = np.array(coords_prepro[100:200])
-training_data2 = np.array(list_chromosome[100:200])
+training_data1 = np.array(coords_prepro[100:150])
+training_data2 = np.array(list_chromosome[100:150])
 
 # separating training set and testing set
 transpose_testing = np.array(testing_data1).T
