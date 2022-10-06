@@ -16,7 +16,7 @@ from random import randint
 #read RAW data
 # /Users/danielhuang/coding/DAAD_main/Data/220602_RAW_data_population_WITHOUT_COMMENT
 # C:\Users\Administrator\Documents\Neuer Ordner\DAAD\Data\220602_RAW_data_population_WITHOUT_COMMENT
-path_data=r'/Users/danielhuang/coding/DAAD_main/Data/220602_RAW_data_population_WITHOUT_COMMENT'
+path_data=r'C:\Users\Administrator\Documents\Neuer Ordner\DAAD\Data\220602_RAW_data_population_WITHOUT_COMMENT'
 list_chromosome, list_fitness, coords_RAW = read_RAW_data(path=path_data)
 
 #create the distributed points
@@ -54,12 +54,12 @@ class surrogate_modelling:
         self.input_set = input_set
         self.output_set = output_set
 
-    def portion_data(self, input_size = 100, output_size = 150):
+    def portion_data(self, test_size = 100, train_size = 150):
         # Taking a portion of data becasue too many data entries crash jupyter kernel
-        self.testing_in = np.array(self.input_set[:input_size])
-        self.testing_out = np.array(self.output_set[:input_size])
-        self.training_in = np.array(self.input_set[input_size:output_size])
-        self.training_out = np.array(self.output_set[input_size:output_size])
+        self.testing_in = np.array(self.input_set[:test_size])
+        self.testing_out = np.array(self.output_set[:test_size])
+        self.training_in = np.array(self.input_set[test_size:train_size])
+        self.training_out = np.array(self.output_set[test_size:train_size])
 
     def preprocessing(self):
         # separating training set and testing set
@@ -103,7 +103,7 @@ class surrogate_modelling:
         self.df_process2_split = np.array_split(df_process2, len(df_process2)/50)
         self.df_process1_split = np.array_split(df_process1, len(df_process1)/50)
 
-    def training(self):
+    def slicing_training(self, rand_num):
         dim = 8
         theta = [1e-2] * dim
         for i in range(50):
@@ -112,7 +112,7 @@ class surrogate_modelling:
             self.y_test1 = self.df_process1_split[i]['9'].to_numpy()
             self.y_test2 = self.df_process1_split[i]['10'].to_numpy()
 
-            indicesss = np.random.choice(range(len(self.df_process2_split)), 20)
+            indicesss = np.random.choice(range(len(self.df_process2_split[i])), rand_num)
 
             # separating it into input and two outputs
             self.x_train = self.df_process2_split[i].iloc[indicesss, :8].to_numpy()
@@ -148,9 +148,9 @@ class surrogate_modelling:
 
 # In[35]:
 foo = surrogate_modelling(input_set = coords_prepro, output_set = list_chromosome)
-foo.portion_data()
+foo.portion_data(test_size = 100, train_size = 500)
 foo.preprocessing()
-foo.training()
+foo.slicing_training(rand_num = 500)
 
 
 # In[8]:
