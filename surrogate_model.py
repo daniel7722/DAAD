@@ -14,7 +14,8 @@ from random import randint
 """reading of RAW data and preprocessing"""
 
 #read RAW data
-path_data=r'/Users/danielhuang/coding/DAAD_main/Data/220602_RAW_data_population_WITHOUT_COMMENT'
+# /Users/danielhuang/coding/DAAD_main/Data/220602_RAW_data_population_WITHOUT_COMMENT
+path_data=r'C:\Users\Administrator\Documents\Neuer Ordner\DAAD\Data\220602_RAW_data_population_WITHOUT_COMMENT'
 list_chromosome, list_fitness, coords_RAW = read_RAW_data(path=path_data)
 
 #create the distributed points
