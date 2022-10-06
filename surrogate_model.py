@@ -16,7 +16,7 @@ from random import randint
 #read RAW data
 # /Users/danielhuang/coding/DAAD_main/Data/220602_RAW_data_population_WITHOUT_COMMENT
 # C:\Users\Administrator\Documents\Neuer Ordner\DAAD\Data\220602_RAW_data_population_WITHOUT_COMMENT
-path_data=r'/Users/danielhuang/coding/DAAD_main/Data/220602_RAW_data_population_WITHOUT_COMMENT'
+path_data=r'C:\Users\Administrator\Documents\Neuer Ordner\DAAD\Data\220602_RAW_data_population_WITHOUT_COMMENT'
 
 list_chromosome, list_fitness, coords_RAW = read_RAW_data(path=path_data)
 
@@ -107,8 +107,8 @@ class surrogate_modelling:
     def slicing_training(self, rand_num):
         dim = 8
         theta = [1e-2] * dim
-        x_value = {}
-        y_value = {}
+        x_value = []
+        y_value = []
         for i in range(10):
             # separating it into input and two outputs
             self.x_test = self.df_process1_split[i][['0', '1', '2', '3', '4', '5', '6', '7']].to_numpy()
@@ -126,18 +126,20 @@ class surrogate_modelling:
             tx.set_training_values(self.x_train,self.y_train1)
             tx.train()
             y1 = tx.predict_values(self.x_test)
-            # x_value[i] = y1
+            x_value.append(y1.ravel())
+            
 
             ty = KPLS(theta0=theta,print_prediction = False, eval_n_comp = True)
             ty.set_training_values(self.x_train, self.y_train2)
             ty.train()
             y2 = ty.predict_values(self.x_test)
-            # y_value[i] = y2
-        return y1.shape
-        # df_x = pd.DataFrame(x_value)
-        # df_y = pd.DataFrame(y_value)
+            y_value.append(y2.ravel())
+        
+        df_x = pd.DataFrame(x_value)
+        df_y = pd.DataFrame(y_value)
 
-        # plt.plot(df_x[0], df_y[0])
+        plt.plot(df_x.iloc[0, :], df_y.iloc[0, :])
+        
 
 
             # print('kriging' + ' err: '+ str(compute_rms_error(tx,self.x_test,self.y_test1)))
