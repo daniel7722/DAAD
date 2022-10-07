@@ -145,7 +145,7 @@ class surrogate_modelling:
         df_y_val = pd.DataFrame(y_validate)
 
         plt.plot(df_x.iloc[0, :], df_y.iloc[0, :], 'b.')
-        plt.plot(df_x_val.iloc[0, :], df_y.iloc[0, :], 'g.')
+        plt.plot(df_x_val.iloc[0, :], df_y_val.iloc[0, :], 'g.')
 
         
 
