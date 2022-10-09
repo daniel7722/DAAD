@@ -9,7 +9,6 @@ from smt.utils import compute_rms_error
 from smt.surrogate_models import KRG, KPLS
 from random import randint
 
-
 # In[2]:
 """reading of RAW data and preprocessing"""
 
@@ -47,11 +46,13 @@ list_chromosome, list_fitness, coords_RAW, coords_prepro = delete_results_of_fal
 list_chromosome = simplify_chromosome(list_chromosome=list_chromosome)
 
 
+
 # In[3]:
 
 class surrogate_modelling:
 
     def __init__(self, input_set = coords_prepro, output_set = list_chromosome):
+        # initialise datasets
         self.input_set = input_set
         self.output_set = output_set
 
@@ -63,7 +64,7 @@ class surrogate_modelling:
         self.training_out = np.array(self.output_set[test_size:train_size])
 
     def preprocessing(self):
-        # separating training set and testing set
+        # sepatate output into x set and y set
         transpose_testing = np.array(self.testing_in).T
         data_x_test = transpose_testing[:50]
         data_y_test = transpose_testing[50:]
@@ -94,35 +95,47 @@ class surrogate_modelling:
                 _temp.extend([z[index]])
                 self.training_processed.append(_temp)
         
-        columns =['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'] 
-        df_process1 = pd.DataFrame(self.testing_processed, columns= columns)
-        df_process2 = pd.DataFrame(self.training_processed, columns= columns)
+        columns =list('0123456789')+['10']
+        df_process_test = pd.DataFrame(self.testing_processed, columns= columns)
+        df_process_train = pd.DataFrame(self.training_processed, columns= columns)
 
-        df_process1.sort_values('8', inplace = True)
-        df_process2.sort_values('8', inplace = True)
+        self.df_process_train_split = df_process_train.groupby(by = ['8'])
+        self.df_process_test_split = df_process_test.groupby(by = ['8'])
+        full1 = []
+        full2 = []
+        for j in range(10):
+            daniel = []
+            daniel1 = []
+            for i in range(10):
+                daniel.append(self.df_process_test_split.get_group(i).iloc[j, 9])
+                daniel1.append(self.df_process_test_split.get_group(i).iloc[j, 10])
+            full1.append(daniel)
+            full2.append(daniel1)
+        plt.plot(full1[1], full2[1], '.')
 
-        self.df_process2_split = np.array_split(df_process2, len(df_process2)/50)
-        self.df_process1_split = np.array_split(df_process1, len(df_process1)/50)
+
 
     def slicing_training(self, rand_num):
         dim = 8
         theta = [1e-2] * dim
+        pre = []
         x_value = []
         x_validate = []
         y_value = []
         y_validate = []
+            
         for i in range(10):
             # separating it into input and two outputs
-            self.x_test = self.df_process1_split[i][['0', '1', '2', '3', '4', '5', '6', '7']].to_numpy()
-            self.y_test1 = self.df_process1_split[i]['9'].to_numpy()
-            self.y_test2 = self.df_process1_split[i]['10'].to_numpy()
+            self.x_test = self.df_process_test_split.get_group(i).iloc[:, :8].to_numpy()
+            self.y_test1 = self.df_process_test_split.get_group(i).iloc[:, 9].to_numpy()
+            self.y_test2 = self.df_process_test_split.get_group(i).iloc[:, 10].to_numpy()
 
-            indicesss = np.random.choice(range(len(self.df_process2_split[i])), rand_num)
+            indicesss = np.random.choice(range(len(self.df_process_train_split.get_group(0))), rand_num)
 
             # separating it into input and two outputs
-            self.x_train = self.df_process2_split[i].iloc[indicesss, :8].to_numpy()
-            self.y_train1 = self.df_process2_split[i].iloc[indicesss, 9].to_numpy()
-            self.y_train2 = self.df_process2_split[i].iloc[indicesss, 10].to_numpy()
+            self.x_train = self.df_process_train_split.get_group(i).iloc[indicesss, :8].to_numpy()
+            self.y_train1 = self.df_process_train_split.get_group(i).iloc[indicesss, 9].to_numpy()
+            self.y_train2 = self.df_process_train_split.get_group(i).iloc[indicesss, 10].to_numpy()
 
             tx = KRG(theta0=theta,print_prediction = False)
             tx.set_training_values(self.x_train,self.y_train1)
@@ -177,7 +190,7 @@ class surrogate_modelling:
 foo = surrogate_modelling(input_set = coords_prepro, output_set = list_chromosome)
 foo.portion_data(test_size = 100, train_size = 150)
 foo.preprocessing()
-foo.slicing_training(rand_num = 20)
+# foo.slicing_training(rand_num = 20)
 
 
 # In[8]:
