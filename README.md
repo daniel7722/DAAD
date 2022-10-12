@@ -18,7 +18,12 @@ The guide for using surrogate_model.py file is in the following:
 
 ## Result and Discussion
 
-Currently, I am facing kernel crashing problem when running data entries that is more than a certain extent. Also, the accuracy is not promising. So, the future work might be choosing the suitable surrogate model method and hyperparameters tuning.
+Currently, I am facing kernel crashing problem when running data entries that is more than a certain extent. Also, the accuracy is not promising (following image). 
+
 ![alt text](./output.png)
 
-Surrogate modelling is relatively a new field of study and is certainly still developing. Therefore, there are still a lot to explore in this project and might have hidden potential that I haven't found yet. It's been a great journey to make it this far and I will update if there's anything I wanna try and actually works. Thank you
+The blue dots are supposed to predict the green path, but apparently it is not. There might be a few reasons for this. First of all, because the nature of data we are using to train the model is not relevant to each other, that is there is no relationship between the first data entry and the second data entry. Thus, it is reasonable that the machine could not find the pattern clearly. Besides, we have not had the time to do any hyperparameters tuning, model comparison and selection, or even try other ways to treat data. In fact we did try to predict x data and y data with a respective model, However, it was quite an ability beyond current machine. 
+
+All in all, the future work would be choosing the suitable surrogate model method that suits the situation we have here and conduct some hyperparameters tuning on the selected model. 
+
+Surrogate modelling is relatively a new field of study and is certainly still developing. Therefore, there are still a lot to explore in this project and might have hidden potential that we haven't found yet. It's been a great journey to make it this far and I will update if there's anything I have tried and actually works. Thank you!
