@@ -1,13 +1,8 @@
 # In[1]:
 """importing necessary functions"""
-import sys
 #sys.path.insert(0, r'C:\LokaleDaten\s8913814\Documents\Python_experimental')
 from _220302_data_creation_for_NN_ADDITIONAL_FUNCTIONS import *
-import random
-from sklearn.metrics import mean_squared_error
-from smt.utils import compute_rms_error
 from smt.surrogate_models import KRG, KPLS
-from random import randint
 
 # In[2]:
 """reading of RAW data and preprocessing"""
@@ -105,25 +100,8 @@ class surrogate_modelling:
         # group the data by index I put previously so it would be like all zeros as the first configuration and all ones as the successive configuration
         self.df_process_train_split = df_process_train.groupby(by = ['8'])
         self.df_process_test_split = df_process_test.groupby(by = ['8'])
-        # full1 = []
-        # full2 = []
-        # for j in range(10):
-        #     daniel = []
-        #     daniel1 = []
-        #     for i in range(10):
-        #         temp1 = self.df_process_test_split.get_group(i).reset_index()
-        #         daniel.append(temp1.iloc[j, 10])
-        #         temp2 = self.df_process_test_split.get_group(i).reset_index()
-        #         daniel1.append(temp2.iloc[j, 11])
-        #     full1.append(daniel)
-        #     full2.append(daniel1)
-        # return self.df_process_test_split.get_group(9).reset_index().iloc[:, 11]
-        # # plt.plot(full1[9], full2[9], '.')
-        # # self.df_process_test_split.get_group(5).reset_index()
 
-
-
-    def slicing_training(self, rand_num):
+    def slicing_training(self, rand_num, path_num = 0):
         # Building model for each index group
         # initialise variables and provisonal list
         dim = 9
@@ -172,12 +150,14 @@ class surrogate_modelling:
         df_y_val = pd.DataFrame(y_validate)
 
         # plot out the index zeroth group with green dot plot as validation
-        plt.plot(df_x.iloc[:, 0], df_y.iloc[:, 0], 'b.')
-        plt.plot(df_x_val.iloc[:, 0], df_y_val.iloc[:, 0], 'g.')
+        plt.plot(df_x.iloc[:, path_num], df_y.iloc[:, path_num], 'b.', label = 'Prediction')
+        plt.plot(df_x_val.iloc[:, path_num], df_y_val.iloc[:, path_num], 'g.', label = 'True Path')
+        plt.title(f'Path: {path_num}')
+        plt.legend()
 
 # In[35]:
 # calling class
 foo = surrogate_modelling()
 foo.portion_data(test_size = 100, train_size = 150)
 foo.preprocessing(num_point = number_of_points)
-foo.slicing_training(rand_num = 20)
+foo.slicing_training(rand_num = 20, path_num = 55)
