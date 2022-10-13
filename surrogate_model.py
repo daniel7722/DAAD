@@ -61,6 +61,7 @@ class surrogate_modelling:
 
     def preprocessing(self, num_point):
         # sepatate output into x set and y set
+        # nim_point : number of points per path
         transpose_testing = np.array(self.testing_out).T
         self.num_point = num_point
         data_x_test = transpose_testing[:self.num_point]
@@ -101,15 +102,16 @@ class surrogate_modelling:
         self.df_process_train_split = df_process_train.groupby(by = ['8'])
         self.df_process_test_split = df_process_test.groupby(by = ['8'])
 
-    def slicing_training(self, rand_num, path_num = 0):
+    def slicing_training(self, rand_num):
         # Building model for each index group
+        # rand_num : number of training datas
         # initialise variables and provisonal list
         dim = 9
         theta = [1e-2] * dim
-        x_value = []
-        x_validate = []
-        y_value = []
-        y_validate = []
+        self.x_value = []
+        self.x_validate = []
+        self.y_value = []
+        self.y_validate = []
         
         for i in range(self.num_point):
             # separating it into input (x) and two outputs (y1, y2)
@@ -131,8 +133,8 @@ class surrogate_modelling:
             tx.train()
             y1 = tx.predict_values(self.x_test)
             # saving predicted data into another list for plotting
-            x_value.append(y1.ravel())
-            x_validate.append(self.y_test1.ravel())
+            self.x_value.append(y1.ravel())
+            self.x_validate.append(self.y_test1.ravel())
             
             # training KPLS model for each index group on y
             ty = KPLS(theta0=theta,print_prediction = False, eval_n_comp = True)
@@ -140,14 +142,16 @@ class surrogate_modelling:
             ty.train()
             y2 = ty.predict_values(self.x_test)
             # saving predicted data into another list for plotting 
-            y_value.append(y2.ravel())
-            y_validate.append(self.y_test2.ravel())
+            self.y_value.append(y2.ravel())
+            self.y_validate.append(self.y_test2.ravel())
         
+    def plot(self, path_num = 0):
+        # path_num : the path number that will be plotted
         # make the data saved into datafame
-        df_x = pd.DataFrame(x_value)
-        df_y = pd.DataFrame(y_value)
-        df_x_val = pd.DataFrame(x_validate)
-        df_y_val = pd.DataFrame(y_validate)
+        df_x = pd.DataFrame(self.x_value)
+        df_y = pd.DataFrame(self.y_value)
+        df_x_val = pd.DataFrame(self.x_validate)
+        df_y_val = pd.DataFrame(self.y_validate)
 
         # plot out the index zeroth group with green dot plot as validation
         plt.plot(df_x.iloc[:, path_num], df_y.iloc[:, path_num], 'b.', label = 'Prediction')
@@ -160,4 +164,8 @@ class surrogate_modelling:
 foo = surrogate_modelling()
 foo.portion_data(test_size = 100, train_size = 150)
 foo.preprocessing(num_point = number_of_points)
-foo.slicing_training(rand_num = 20, path_num = 55)
+foo.slicing_training(rand_num = 20)
+foo.plot(path_num = 55)
+
+#%%
+foo.plot(path_num = 40)
